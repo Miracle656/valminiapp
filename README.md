@@ -1,6 +1,6 @@
 # Farcaster Mini App Template
 
-This is a [Next.js](https://nextjs.org) starter kit to boostrap your Farcaster Mini App
+This is a [Next.js](https://nextjs.org) starter kit to bootstrap your Farcaster Mini App
 
 - [Farcaster Mini Apps](https://miniapps.xyz)
 - [Tailwind CSS](https://tailwindcss.com)
@@ -26,7 +26,7 @@ bun install
 The environment variables enable the following features:
 
 - Frame metadata - Sets up the Frame Embed that will be shown when you cast your frame
-- Account assocation - Allows users to add your frame to their account, enables notifications
+- Account association - Allows users to add your frame to their account, enables notifications
 - Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
 
 ```bash
@@ -37,6 +37,9 @@ NEXT_PUBLIC_URL=
 NEXT_PUBLIC_FARCASTER_HEADER=
 NEXT_PUBLIC_FARCASTER_PAYLOAD=
 NEXT_PUBLIC_FARCASTER_SIGNATURE=
+
+# Optional: Set to "production" to disable Eruda debugger
+NEXT_PUBLIC_APP_ENV=development
 
 # Required for user authentication
 NEYNAR_API_KEY=
@@ -66,6 +69,41 @@ npm run dev
 
 ## Template Features
 
+### Providers Architecture
+
+The app uses a layered provider architecture in `components/providers/index.tsx`:
+
+- **EnvironmentProvider** - Detects if the app is running in a browser or Farcaster Mini App context
+- **ErudaProvider** - Mobile debugging console (disabled in production via `NEXT_PUBLIC_APP_ENV`)
+- **WagmiProvider** - Wallet connection with Farcaster Mini App connector and Coinbase Wallet support
+- **QueryClientProvider** - React Query for data fetching
+- **FarcasterProvider** - Mini App SDK initialization, context, and safe area insets
+- **UserProvider** - User authentication state with auto sign-in support
+
+### Context Hooks
+
+Three custom context hooks are available:
+
+- `useEnvironment()` - Access `isInBrowser`, `isInFarcasterMiniApp`, and `isLoading` states
+- `useFarcaster()` - Access Mini App context, capabilities, safe area insets, and SDK state
+- `useUser()` - Access user data, sign-in methods, and authentication state
+
+### Authentication System
+
+JWT-based authentication using Farcaster Quick Auth:
+
+- **Sign-in flow** - Uses `@farcaster/quick-auth` to verify user identity
+- **API routes** - `/api/auth/sign-in` for authentication, `/api/auth/check` for session validation
+- **User data** - `/api/users/me` returns authenticated user profile from Neynar
+- **Auto sign-in** - Configurable automatic authentication when Mini App loads
+
+### API Hooks
+
+Custom hooks for API interactions built on React Query:
+
+- `useApiQuery` - For GET requests with caching, protected routes support
+- `useApiMutation` - For POST/PUT/DELETE requests with optimistic updates
+
 ### Frame Configuration
 
 - `.well-known/farcaster.json` endpoint configured for Frame metadata and account association
@@ -77,19 +115,53 @@ npm run dev
 - Ready-to-use notification endpoints in `api/notify` and `api/webhook`
 - Notification client utilities in `lib/notification-client.ts`
 
-### MiniApp Provider
+### Environment Detection & Website Fallback
 
-The app is wrapped with `MiniAppProvider` in `providers.tsx`, configured with:
+When accessed from a regular browser (not in Farcaster/Base), the app displays a landing page with:
 
-- Access to Mini App context
-- Sets up Wagmi Connectors
-- Sets up Mini App SDK listeners
-- Applies Safe Area Insets
+- QR code for easy mobile access
+- Direct launch buttons for Farcaster and Base (Coinbase Wallet)
+- App information and branding
+
+### Wallet Integration
+
+Pre-configured Wagmi setup with:
+
+- Farcaster Mini App connector (`@farcaster/miniapp-wagmi-connector`)
+- Coinbase Wallet connector
+- Base and Mainnet chain support
 
 ### Dynamic Preview Images
 
-- `dynamic-image-example/[id]/page.tsx` show how to create a Mini App URL resolving to a custom preview image
-- `api/og/example/[id]/route.ts` shows how to generate a custom preview image
+- `dynamic-image-example/[id]/page.tsx` shows how to create a Mini App URL resolving to a custom preview image
+- `api/og/example/[id]/route.tsx` shows how to generate a custom preview image using `next/og`
+- Utility functions in `lib/og-utils.ts` for loading Google Fonts and images
+
+### Development Tools
+
+- **Eruda** - Mobile debugging console, automatically disabled in production
+- **Type-safe environment variables** - Using `@t3-oss/env-nextjs` with Zod validation
+- **Secure headers** - CSP and security headers configured via `next-secure-headers`
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── notify/        # Push notification endpoints
+│   │   ├── og/            # Dynamic OG image generation
+│   │   ├── users/         # User data endpoints
+│   │   └── webhook/       # Webhook handlers
+│   └── dynamic-image-example/  # Dynamic preview image example
+├── components/
+│   ├── pages/             # Page components (home, website)
+│   ├── providers/         # Context providers
+│   └── shared/            # Reusable UI components
+├── contexts/              # React contexts
+├── hooks/                 # Custom React hooks
+└── lib/                   # Utilities and configurations
+```
 
 ## Learn More
 
