@@ -4,7 +4,6 @@ import { env } from "@/lib/env";
 import { fetchUser } from "@/lib/neynar";
 import * as jose from "jose";
 import { NextRequest, NextResponse } from "next/server";
-import { Address, zeroAddress } from "viem";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +13,6 @@ export const POST = async (req: NextRequest) => {
   const { referrerFid, token: farcasterToken } = await req.json();
   let fid;
   let isValidSignature;
-  let walletAddress: Address = zeroAddress;
   let expirationTime = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
   // Verify signature matches custody address and auth address
   try {
@@ -24,7 +22,6 @@ export const POST = async (req: NextRequest) => {
     });
     isValidSignature = !!payload;
     fid = Number(payload.sub);
-    walletAddress = payload.address as `0x${string}`;
     expirationTime = payload.exp ?? Date.now() + 7 * 24 * 60 * 60 * 1000;
   } catch (e) {
     if (e instanceof Errors.InvalidTokenError) {
@@ -47,7 +44,6 @@ export const POST = async (req: NextRequest) => {
   const secret = new TextEncoder().encode(env.JWT_SECRET);
   const token = await new jose.SignJWT({
     fid,
-    walletAddress,
     timestamp: Date.now(),
   })
     .setProtectedHeader({ alg: "HS256" })
