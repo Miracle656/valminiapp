@@ -1,7 +1,7 @@
 import { env } from "@/lib/env";
 
 export interface NeynarUser {
-  fid: string;
+  fid: number; // Changed from string to number to match ValentineMessage type
   username: string;
   display_name: string;
   pfp_url: string;

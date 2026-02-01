@@ -1,7 +1,8 @@
 import { Errors, createClient } from "@farcaster/quick-auth";
 
 import { env } from "@/lib/env";
-import { fetchUser } from "@/lib/neynar";
+// TEMPORARY: Not using Neynar for now
+// import { fetchUser } from "@/lib/neynar";
 import * as jose from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -38,7 +39,17 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const user = await fetchUser(fid.toString());
+  // TEMPORARY: Bypass Neynar - create basic user object from FID only
+  // Once Neynar API key is working, uncomment the line below and remove this block
+  // const user = await fetchUser(fid.toString());
+  const user = {
+    fid: fid, // Keep as number to match types
+    username: `fid-${fid}`,
+    display_name: `User ${fid}`,
+    pfp_url: '',
+    custody_address: '',
+    verifications: [],
+  };
 
   // Generate JWT token
   const secret = new TextEncoder().encode(env.JWT_SECRET);
