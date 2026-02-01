@@ -24,11 +24,11 @@ export const messageStorage = {
         return messages.filter(m => m.senderFid === senderFid);
     },
 
-    // Get messages for a recipient (by wallet address)
-    getByRecipient(address: string): ValentineMessage[] {
+    // Get messages for a recipient (by FID)
+    getByRecipient(recipientFid: number): ValentineMessage[] {
         const messages = this.getAll();
         return messages.filter(
-            m => m.recipientAddress.toLowerCase() === address.toLowerCase()
+            m => m.recipientFid === recipientFid
         );
     },
 

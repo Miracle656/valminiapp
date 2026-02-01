@@ -18,16 +18,16 @@ export default function HomePage() {
   const [receivedMessages, setReceivedMessages] = useState<ValentineMessage[]>([]);
 
   useEffect(() => {
-    if (user?.data?.fid && address) {
+    if (user?.data?.fid) {
       // Load messages sent by this user
       const sent = messageStorage.getBySender(user.data.fid);
       setSentMessages(sent);
 
-      // Load messages received by this wallet
-      const received = messageStorage.getByRecipient(address);
+      // Load messages received by this user (by FID)
+      const received = messageStorage.getByRecipient(user.data.fid);
       setReceivedMessages(received);
     }
-  }, [user?.data?.fid, address]);
+  }, [user?.data?.fid]);
 
   if (isInBrowser) {
     return <Website />;
